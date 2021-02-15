@@ -16,7 +16,8 @@ html, body {
 }
 
 .block {
-    background: azure
+    background: azure;
+    padding: 0 0px 5px 5px
 }
 
 .file > h2 {
@@ -36,8 +37,42 @@ html, body {
     background: bisque;
     color: red;
     margin-left: 20px;
+    padding: 5px;
 }
 
 .test {
     margin: 5px;
+}
+
+@media (prefers-color-scheme: dark) {
+    html {
+        background: #242424;
+        color: #cfcfcf;
+    }
+
+    .file {
+        background: #323232
+    }
+
+    .block {
+        background: #403848
+    }
+
+    .success {
+        background: #234723;
+    }
+
+    .failiure {
+        background: #591340
+    }
+
+    .message {
+        background: #484848;
+    }
+
+    button {
+        background: #454545;
+        color: #c3c3c3
+    }
+
 }
