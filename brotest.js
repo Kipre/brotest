@@ -1,7 +1,7 @@
 import ui from './ui.js';
 
 function currentFile() {
-    const matches = new Error().stack.match(/([^ (\n])*([a-z]*:\/\/\/?)*?[a-z0-9\/\\]*\.js/ig)
+    const matches = new Error().stack.match(/(?<=https?:\/\/[^\/]*\/)[^:]*/ig);
     return matches[matches.length - 1];
 }
 
@@ -68,18 +68,17 @@ class Bro {
         try {
             fn();
         } catch (e) {
-            console.error(name, 'failed', e);
-            return [true, `${name} failed ${e}`];
+            return [true, `${name} failed`, e];
         }
-        return [false, ""];
+        return [false, "", null];
     }
 
     async run() {
-        console.log(this.files);
+//         console.log(this.files);
         const runOne = ({name, fn, timeout, display})=>{
-            const [fail,message] = this.causesError(name, fn);
+            const [fail, message, error] = this.causesError(name, fn);
             errors += fail;
-            display(!fail, message);
+            display(!fail, message, error);
         }
         let errors = 0;
         for (const file in this.files) {
@@ -94,11 +93,7 @@ class Bro {
             }
 
         }
-        if (!errors) {
-            console.log(`%cAll ${this.nbTests} tests ran successfully.`, 'color: green');
-        } else {
-            console.log(`%c${errors} out of ${this.nbTests} tests failed.`, 'color: red');
-        }
+        ui.finished(errors == 0, this.nbTests, errors)
     }
 
     currentTests(filename, block) {

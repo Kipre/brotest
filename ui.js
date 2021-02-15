@@ -1,28 +1,51 @@
-const elem = (type, firstClass, content) => {
+function attachCSS() {
+    const link = document.createElement("link");
+    link.type = "text/css";
+    link.rel = "stylesheet";
+    link.href = 'brotest/style.css';
+    document.head.appendChild(link);
+}
+
+const elem = (type,firstClass,content)=>{
     const element = document.createElement(type);
-    if (firstClass) element.classList.add(firstClass);
-    if (content) element.innerHTML = content;
+    if (firstClass)
+        element.classList.add(firstClass);
+    if (content)
+        element.innerHTML = content;
     return element;
 }
 
 class UI {
     constructor() {
+        attachCSS();
         this.dom = {};
         this.container = elem('div', 'container', `<h1>brotest</h1>`);
+        const reload = elem('button', null, 'reload/run');
+        reload.onclick = _=>location.reload(true);
+        this.container.appendChild(reload)
         document.body.appendChild(this.container);
     }
 
     addTest(filename, blockname, name) {
         const test = elem('div', 'test', `❓ ${name}`);
         this.getDom(filename, blockname).appendChild(test);
-        return (passed, message) => {
+        return (passed, message, error)=>{
             if (passed) {
                 test.innerText = `✅ ${name}`;
             } else {
                 test.innerText = `❌ ${name}`;
-                test.appendChild(elem('span', 'message', '<br>' + message))
+                const [mess, _, position, ...rest] = error.stack.split('\n');
+                message = message + mess.replace('Error:', '') + '\n' + position;
+                test.appendChild(elem('div', 'message', message));
+                console.error(message);
             }
         }
+    }
+
+    finished(success, total, failed) {
+        const message = success ? `All ${total} test ran successfully.` : `${failed} out of ${total} tests failed.`;
+        this.container.appendChild(elem('div', success ? 'success' : 'failiure', message));
+        console.log(`%c${message}`, `color: ${success ? 'green' : 'red'}`);
     }
 
     getDom(filename, blockname) {
