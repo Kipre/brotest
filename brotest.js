@@ -147,21 +147,21 @@ class Expectation {
 
     toBe(expectedValue) {
         if (this.value !== expectedValue) {
-            throw new Error(`because ${this.value} is not ${expectedValue}`);
+            throw new Error(`because ${this.value} is not ${expectedValue}⚠`);
         }
     }
 
     toMatchObject(object) {
         for (const property in object) {
             if (this.value[property] != object[property]) {
-                throw new Error(`because in property "${property}" which is ${this.value[property]} does not match ${object[property]}.`);
+                throw new Error(`because in property "${property}" which is ${this.value[property]} does not match ${object[property]}.⚠`);
             }
         }
     }
 
     toEqual(object) {
         if (!unsafeEqual(this.value, object)) {
-            throw new Error(`because ${JSON.stringify(this.value)} does not match ${JSON.stringify(object)}.`);
+            throw new Error(`because ${JSON.stringify(this.value)} does not match ${JSON.stringify(object)}.⚠`);
         }
     }
 }

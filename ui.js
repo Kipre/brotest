@@ -29,15 +29,21 @@ class UI {
     addTest(filename, blockname, name) {
         const test = elem('div', 'test', `❓ ${name}`);
         this.getDom(filename, blockname).appendChild(test);
-        return (passed, message, error)=>{
+        return (passed,message,error)=>{
             if (passed) {
                 test.innerText = `✅ ${name}`;
             } else {
                 test.innerText = `❌ ${name}`;
-                const [mess, _, position, ...rest] = error.stack.split('\n');
-                message = message + mess.replace('Error:', '') + '\n' + position;
-                test.appendChild(elem('div', 'message', message));
-                console.error(message);
+                if (error.stack.includes('⚠')) {
+                    /* if the error comes from an umatched expextation */
+                    const [mess,_,position,...rest] = error.stack.split('\n');
+                    message = message + mess.replace('Error:', '') + '\n' + position;
+                    test.appendChild(elem('div', 'message', message));
+                    console.error(message);
+                } else {
+                    /* if the error is from code */
+                    console.error(error);
+                }
             }
         }
     }
