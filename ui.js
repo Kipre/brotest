@@ -35,7 +35,7 @@ class UI {
             } else {
                 test.innerText = `❌ ${name}`;
                 if (error.stack.includes('⚠')) {
-                    /* if the error comes from an umatched expextation */
+                    /* if the error comes from an umatched expectation */
                     const [mess,_,position,...rest] = error.stack.split('\n');
                     message = message + mess.replace('Error:', '') + '\n' + position;
                     test.appendChild(elem('div', 'message', message));

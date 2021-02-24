@@ -164,6 +164,12 @@ class Expectation {
             throw new Error(`because ${JSON.stringify(this.value)} does not match ${JSON.stringify(object)}.⚠`);
         }
     }
+    
+    toHaveLength(number) {
+        if (this.value.length !== number) {
+            throw new Error(`because ${JSON.stringify(this.value)} does not have a length of ${number}.⚠`);
+        }
+    }
 }
 
 export default new Bro();
