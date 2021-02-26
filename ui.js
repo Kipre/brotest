@@ -2,7 +2,7 @@ function attachCSS() {
     const link = document.createElement("link");
     link.type = "text/css";
     link.rel = "stylesheet";
-    link.href = 'brotest/style.css';
+    link.href = './brotest/style.css';
     document.head.appendChild(link);
 }
 

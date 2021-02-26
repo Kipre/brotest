@@ -9,20 +9,10 @@ function emptyObj(obj) {
     return obj && Object.keys(obj).length === 0 && obj.constructor === Object;
 }
 
-function unsafeEqual(a, b) {
-    // https://stackoverflow.com/questions/201183/how-to-determine-equality-for-two-javascript-objects
-    // console.assert(!objEqual(2, 3));
-    // console.assert(objEqual(2, 2));
-    // console.assert(!objEqual({}, {a: 3}));
-    // console.assert(objEqual({a: 3}, {a: 3}));
-    // console.assert(objEqual({}, {}));
-    // console.assert(objEqual([], []));
-    // console.assert(!objEqual([], {}));
-    // console.assert(!objEqual([1], []));
-    // console.assert(objEqual([1, 2], [1, 2]));
+function deepEqual(a, b) {
     function loop(a, b) {
         for (let prop in a) {
-            if (!unsafeEqual(a[prop], b[prop]))
+            if (!deepEqual(a[prop], b[prop]))
                 return false;
         }
         return typeof a == typeof b;
@@ -41,6 +31,7 @@ class Bro {
         this.files = {};
         this.nbTests = 0;
         this.currentBlock = null;
+        this.helpers = {deepEqual};
     }
 
     test(name, fn, timeout) {
@@ -160,7 +151,7 @@ class Expectation {
     }
 
     toEqual(object) {
-        if (!unsafeEqual(this.value, object)) {
+        if (!deepEqual(this.value, object)) {
             throw new Error(`because ${JSON.stringify(this.value)} does not match ${JSON.stringify(object)}.⚠`);
         }
     }
