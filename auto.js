@@ -1,5 +1,5 @@
 /** 
-* File to autotest the frameork
+* File to autotest the framework
 */
 import bro from './brotest.js';
 
@@ -98,5 +98,15 @@ bro.describe('equality', _=>{
         bro.expect(bro.helpers.deepEqual({ a: { b: func } }, { a: { b: func2 } })).toBe(false);
     });
 });
+
+bro.describe('object matching', _=>{
+    bro.test('match', _=>{
+        bro.expect(bro.helpers.matches({0: 1}, {0: 1})).toBe(true);
+        bro.expect(bro.helpers.matches({0: 1}, {0: 1, 1: 2})).toBe(true);
+        bro.expect(bro.helpers.matches({0: 2}, {0: 1})).toBe(false);
+        bro.expect(bro.helpers.matches({0:{2: 4}}, {0: {2: 4}, 'r': 'k'})).toBe(true);
+        bro.expect(bro.helpers.matches({0:{2: 4}}, {0: {2: 5}, 'r': 'k'})).toBe(false);
+    })
+})
 
 bro.run();
