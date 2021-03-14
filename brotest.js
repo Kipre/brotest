@@ -9,7 +9,7 @@ function emptyObj(obj) {
     return obj && Object.keys(obj).length === 0 && obj.constructor === Object;
 }
 
-function deepEqual(x, y) {
+function primitiveEqual(x, y) {
     'use strict';
     // https://stackoverflow.com/questions/201183/how-to-determine-equality-for-two-javascript-objects
     if (x === null || x === undefined || y === null || y === undefined) {
@@ -46,29 +46,27 @@ function deepEqual(x, y) {
     if (!(y instanceof Object)) {
         return false;
     }
-
-    // recursive object equality check
-    var p = Object.keys(x);
-    return Object.keys(y).every(function(i) {
-        return p.indexOf(i) !== -1;
-    }) && p.every(function(i) {
-        return deepEqual(x[i], y[i]);
-    });
+    return undefined;
 }
 
-
-const matches = (expected,value)=>{
-    for (const prop in expected) {
-        const val = expected[prop];
-        if (!(prop in value))
-            return false;
-        const isPrimitive = Object(val) === val;
-        if (!isPrimitive && !matches(val, value[prop]))
-            return false;
-        if (isPrimitive && val !== value[prop])
-            return false;
+function deepEqual(x, y) {
+    const primitive = primitiveEqual(x, y)
+    if (primitive !== undefined) {
+        return primitive;
     }
-    return true;
+
+    // recursive object equality check
+    const p = Object.keys(x);
+    return Object.keys(y).every(i => (p.indexOf(i) !== -1)) && p.every(i => deepEqual(x[i], y[i]));
+}
+
+/* sub is a subset of obj */
+function matches(sub, obj) {
+    const primitive = primitiveEqual(sub, obj)
+    if (primitive !== undefined) {
+        return primitive;
+    }
+    return Object.keys(sub).every(i => matches(sub[i], obj[i]));
 }
 
 class Bro {
@@ -77,6 +75,7 @@ class Bro {
         this.nbTests = 0;
         this.currentBlock = null;
         this.helpers = {
+            primitiveEqual,
             deepEqual,
             matches
         };
@@ -196,7 +195,7 @@ class Expectation {
 
     toMatchObject(object) {
         if (!matches(object, this.value)) {
-            throw new Error(`because ${JSON.stringify(this.value)} does not match ${JSON.stringify(object)} on property ${property}.⚠`);
+            throw new Error(`because ${JSON.stringify(this.value)} does not match ${JSON.stringify(object)}.⚠`);
         }
     }
 

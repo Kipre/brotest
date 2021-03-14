@@ -3,7 +3,39 @@
 */
 import bro from './brotest.js';
 
-bro.describe('equality', _=>{
+bro.describe('equalities', _=>{
+
+    bro.test('primitive equal', _=>{
+        bro.expect(bro.helpers.primitiveEqual(0, 0)).toBe(true);
+        bro.expect(bro.helpers.primitiveEqual(1, 0)).toBe(false);
+        bro.expect(bro.helpers.primitiveEqual(3, 2)).toBe(false);
+        bro.expect(bro.helpers.primitiveEqual(2, 2)).toBe(true);
+        bro.expect(bro.helpers.primitiveEqual(-2, -2)).toBe(true);
+        bro.expect(bro.helpers.primitiveEqual(2.0, 2)).toBe(true);
+        bro.expect(bro.helpers.primitiveEqual(-1.0, 0.0)).toBe(false);
+        bro.expect(bro.helpers.primitiveEqual('t', 't')).toBe(true);
+        bro.expect(bro.helpers.primitiveEqual('r', 't')).toBe(false);
+        bro.expect(bro.helpers.primitiveEqual(null, null)).toBe(true);
+        bro.expect(bro.helpers.primitiveEqual(undefined, undefined)).toBe(true);
+        bro.expect(bro.helpers.primitiveEqual(true, true)).toBe(true);
+        bro.expect(bro.helpers.primitiveEqual(false, false)).toBe(true);
+        bro.expect(bro.helpers.primitiveEqual(false, null)).toBe(false);
+        bro.expect(bro.helpers.primitiveEqual(false, undefined)).toBe(false);
+        bro.expect(bro.helpers.primitiveEqual(undefined, null)).toBe(false);
+        bro.expect(bro.helpers.primitiveEqual(true, 1)).toBe(false);
+        bro.expect(bro.helpers.primitiveEqual(/r/, /r/)).toBe(false);
+        bro.expect(bro.helpers.primitiveEqual({}, {})).toBe(undefined);
+        const obj = {a: 3};
+        const c = obj;
+        bro.expect(bro.helpers.primitiveEqual(obj, obj)).toBe(true);
+        bro.expect(bro.helpers.primitiveEqual(obj, c)).toBe(true);
+        bro.expect(bro.helpers.primitiveEqual({a: 3}, obj)).toBe(undefined);
+        bro.expect(bro.helpers.primitiveEqual({a: 3}, {a: 3})).toBe(undefined);
+        bro.expect(bro.helpers.primitiveEqual({a: 3}, {a: 4})).toBe(undefined);
+        bro.expect(bro.helpers.primitiveEqual([3], {a: 4})).toBe(false);
+        bro.expect(bro.helpers.primitiveEqual([3], [3])).toBe(undefined);
+    });
+    
     bro.test('deep equal', _=>{
         // https://stackoverflow.com/questions/201183/how-to-determine-equality-for-two-javascript-objects
         bro.expect(bro.helpers.deepEqual(null,null)).toBe(true);
@@ -106,7 +138,10 @@ bro.describe('object matching', _=>{
         bro.expect(bro.helpers.matches({0: 2}, {0: 1})).toBe(false);
         bro.expect(bro.helpers.matches({0:{2: 4}}, {0: {2: 4}, 'r': 'k'})).toBe(true);
         bro.expect(bro.helpers.matches({0:{2: 4}}, {0: {2: 5}, 'r': 'k'})).toBe(false);
-    })
-})
+        bro.expect(bro.helpers.matches([{cursels:[[1,3,1,3]], text:"some\ntext here"}], 
+                                       [{cursels:[[1,3,1,3]], text:"some\ntext here"}])).toBe(true);
+        bro.expect(bro.helpers.matches({"l":1,"c":3,"tl":null,"tc":null}, {"l":1,"c":3,"tl":null,"tc":null,"hc":3})).toBe(true);
+    });
+});
 
 bro.run();
