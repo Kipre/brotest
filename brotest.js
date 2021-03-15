@@ -9,7 +9,7 @@ function emptyObj(obj) {
     return obj && Object.keys(obj).length === 0 && obj.constructor === Object;
 }
 
-function primitiveEqual(x, y) {
+export function primitiveEqual(x, y) {
     'use strict';
     // https://stackoverflow.com/questions/201183/how-to-determine-equality-for-two-javascript-objects
     if (x === null || x === undefined || y === null || y === undefined) {
@@ -49,7 +49,7 @@ function primitiveEqual(x, y) {
     return undefined;
 }
 
-function deepEqual(x, y) {
+export function deepEqual(x, y) {
     const primitive = primitiveEqual(x, y)
     if (primitive !== undefined) {
         return primitive;
@@ -61,24 +61,19 @@ function deepEqual(x, y) {
 }
 
 /* sub is a subset of obj */
-function matches(sub, obj) {
-    const primitive = primitiveEqual(sub, obj)
-    if (primitive !== undefined) {
-        return primitive;
-    }
+export function matches(sub, obj) {
+    // if sub is primitive compare it to obj
+    if (sub !== Object(sub))
+        return sub === obj;
+    // else iterate over its keys
     return Object.keys(sub).every(i => matches(sub[i], obj[i]));
 }
 
-class Bro {
+export class Bro {
     constructor() {
         this.files = {};
         this.nbTests = 0;
         this.currentBlock = null;
-        this.helpers = {
-            primitiveEqual,
-            deepEqual,
-            matches
-        };
     }
 
     test(name, fn, timeout) {
@@ -182,7 +177,7 @@ class Bro {
     }
 }
 
-class Expectation {
+export class Expectation {
     constructor(value) {
         this.value = value;
     }
@@ -208,6 +203,17 @@ class Expectation {
     toHaveLength(number) {
         if (this.value.length !== number) {
             throw new Error(`because ${JSON.stringify(this.value)} does not have a length of ${number}.⚠`);
+        }
+    }
+    
+    toThrow(error) {
+        let errorCaught = false;
+        try {
+            this.value();
+        } catch (error) {
+            errorCaught = true;
+        } finally {
+            if (!errorCaught) throw new Error(`because ${this.value} was supposed to throw an error but didn't.⚠`);
         }
     }
 }
