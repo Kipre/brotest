@@ -154,6 +154,8 @@ bro.describe('expectations', _=>{
         bro.expect({a: 2, b: 3}).toMatchObject({a: 2, b: 3});
         
         bro.expect(() => new Expectation({a: 2, b: 3}).toMatchObject({a: 1})).toThrow();
+        bro.expect(() => new Expectation({a: 2, b: 3}).toMatchObject({a: 2, b: 3, c: 4})).toThrow();
+        bro.expect(() => new Expectation({a: 2, b: 3}).toMatchObject({C: 1})).toThrow();
     })
 })
 
