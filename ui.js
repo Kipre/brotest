@@ -36,12 +36,13 @@ class UI {
                 test.innerText = `❌ ${name}`;
                 if (error.stack.includes('⚠')) {
                     /* if the error comes from an umatched expectation */
-                    const [mess,_,position,...rest] = error.stack.split('\n');
+                    const [mess,_,position,] = error.stack.split('\n');
                     message = message + mess.replace('Error:', '') + '\n' + position;
                     test.appendChild(elem('div', 'message', message));
                     console.error(message);
                 } else {
                     /* if the error is from code */
+                    test.appendChild(elem('div', 'message', error.toString()));
                     console.error(error);
                 }
             }
