@@ -10,8 +10,10 @@ const elem = (type,firstClass,content)=>{
     const element = document.createElement(type);
     if (firstClass)
         element.classList.add(firstClass);
-    if (content)
+    if (typeof content == "string")
         element.innerHTML = content;
+    if (content && typeof content == "object")
+        element.appendChild(content);
     return element;
 }
 
@@ -35,10 +37,11 @@ class UI {
             } else {
                 test.innerText = `❌ ${name}`;
                 if (error.stack.includes('⚠')) {
+                  console.dir(error);
                     /* if the error comes from an umatched expectation */
-                    const [mess,_,position,] = error.stack.split('\n');
-                    message = message + mess.replace('Error:', '') + '\n' + position;
-                    test.appendChild(elem('div', 'message', message));
+                    const [mess,_,position,] = error.stack.split('⚠');
+                    message = message + mess.replace('Error:', '');
+                    test.appendChild(elem('div', 'message', elem("pre", null, elem("code", null, message))));
                     console.error(message);
                 } else {
                     /* if the error is from code */
