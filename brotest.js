@@ -222,6 +222,14 @@ export class Expectation {
     }
   }
 
+  toBeLessThan(number) {
+    if (this.value >= number) {
+      throw new Error(
+        `because ${this.value} is bigger than ${number}.⚠`,
+      );
+    }
+  }
+
   toThrow(error) {
     let errorCaught = false;
     try {
