@@ -20,14 +20,6 @@ const elements = parser.parseFromString(
   "text/html",
 );
 
-function attachCSS() {
-  const link = document.createElement("link");
-  link.type = "text/css";
-  link.rel = "stylesheet";
-  link.href = resolve("style.css");
-  document.head.appendChild(link);
-}
-
 function ensureString(value) {
   if (typeof value == "string") return value;
   return JSON.stringify(value, null, 2);
@@ -55,65 +47,109 @@ export function diffStrings(a, b) {
   return new TextDecoder().decode(outputView);
 }
 
-const elem = (type, firstClass, content) => {
-  const element = document.createElement(type);
-  if (firstClass) element.classList.add(firstClass);
-  if (typeof content == "string") element.innerHTML = content;
-  if (content && typeof content == "object") element.appendChild(content);
-  return element;
-};
-
 class UI {
   constructor() {
-    attachCSS();
+    elements.head
+      .querySelector("link")
+      .setAttribute("href", resolve("style.css"));
+    [...elements.head.children].forEach((el) => document.head.appendChild(el));
+
+    this.container = elements.querySelector("#container");
+    this.footer = elements.querySelector("#footer");
+
+    this.file = elements.querySelector("#file");
+
+    this.block = elements.querySelector("#block");
+
+    this.test = elements.querySelector("#test");
+    this.message = elements.querySelector("#message");
+    this.diff = elements.querySelector("#diff");
+    this.line = elements.querySelector("#line");
+
+    this.container.removeChild(this.file);
+    this.file.removeChild(this.block);
+    this.block.removeChild(this.test);
+    this.test.removeChild(this.message);
+    this.message.removeChild(this.diff);
+
+    [...this.diff.querySelectorAll("div")].map((el) => el.remove());
+
     this.dom = {};
-    this.container = elem("div", "container", `<h1>brotest</h1>`);
-    const reload = elem("button", null, "reload/run");
-    reload.onclick = (_) => location.reload(true);
-    this.container.appendChild(reload);
     document.body.appendChild(this.container);
+
+    document.querySelector("#reload").onclick = () => location.reload(true);
   }
 
   addTest(filename, blockname, name) {
-    const test = elem("div", "test", `❓ ${name}`);
-    this.getDom(filename, blockname).appendChild(test);
-    return (passed, message, error) => {
+    let file = document.querySelector(`.file[data-name="${filename}"]`);
+    if (!file) {
+      file = this.file.cloneNode(true);
+      file.removeAttribute("id");
+      file.dataset.name = filename;
+      file.children[0].innerText = filename;
+      this.container.insertBefore(file, this.footer);
+    }
+    let parent = file;
+
+    let block = null;
+    if (blockname) {
+      block = document.querySelector(`.block[data-name="${blockname}"`);
+      if (!block) {
+        block = this.block.cloneNode(true);
+        block.removeAttribute("id");
+        block.dataset.name = blockname;
+        block.children[0].innerText = blockname;
+        file.appendChild(block);
+      }
+      parent = block;
+    }
+
+    const test = this.test.cloneNode(true);
+    test.removeAttribute("id");
+    test.innerText = `❓ ${name}`;
+
+    parent.appendChild(test);
+
+    return (passed, msg, error) => {
       if (passed) {
         test.innerText = `✅ ${name}`;
-      } else {
-        test.innerText = `❌ ${name}`;
-        console.error(error);
-
-        // error is from code
-        if (!(error instanceof TestFailureError))
-          return test.appendChild(elem("div", "message", error.toString()));
-
-        /* if the error comes from an umatched expectation */
-        message = message + error.originaMessage;
-
-        const messageBody = elem("div", "message", message);
-        test.appendChild(messageBody);
-        messageBody.appendChild(
-          elem(
-            "div",
-            "message",
-            elem(
-              "pre",
-              null,
-              elem(
-                "code",
-                null,
-                diffStrings(
-                  ensureString(error.expected),
-                  ensureString(error.found),
-                ),
-              ),
-            ),
-          ),
-        );
-
-        console.error(message);
+        return;
       }
+
+      test.innerText = `❌ ${name}`;
+      console.error(error);
+
+      const message = this.message.cloneNode(true);
+      message.removeAttribute("id");
+      const text = message.children[0];
+      test.appendChild(message);
+
+      // error is from code
+      if (!(error instanceof TestFailureError)) {
+        text.innerText = error.toString();
+        return;
+      }
+
+      // error from unmatched expectation
+      text.innerText = msg + error.originalMessage;
+
+      if (false) return;
+
+      const diffSection = this.diff.cloneNode(true);
+      diffSection.removeAttribute("id");
+
+      message.appendChild(diffSection);
+      const code = diffSection.querySelector("code");
+      diffStrings(ensureString(error.expected), ensureString(error.found))
+        .split("\n")
+        .forEach((line) => {
+          const div = this.line.cloneNode(true);
+          div.removeAttribute("id");
+          div.innerText = line;
+          if (!line.startsWith(" "))
+            div.classList.add(line.startsWith("+") ? "added" : "removed");
+          code.appendChild(div);
+        });
     };
   }
 
@@ -121,29 +157,10 @@ class UI {
     const message = success
       ? `All ${total} test ran successfully.`
       : `${failed} out of ${total} tests failed.`;
-    this.container.appendChild(
-      elem("div", success ? "success" : "failiure", message),
-    );
-    console.log(`%c${message}`, `color: ${success ? "green" : "red"}`);
-  }
 
-  getDom(filename, blockname) {
-    if (!(filename in this.dom)) {
-      this.dom[filename] = elem("div", "file", `<h2>${filename}</h2>`);
-      this.container.appendChild(this.dom[filename]);
-    }
-    if (blockname) {
-      let blockDom = this.dom[filename].lastChild;
-      if (blockDom?.dataset.name == blockname) {
-        return blockDom;
-      } else {
-        blockDom = elem("div", "block", `<h3>${blockname}</h3>`);
-        blockDom.dataset.name = blockname;
-        this.dom[filename].appendChild(blockDom);
-        return blockDom;
-      }
-    }
-    return this.dom[filename];
+    this.footer.innerText = message;
+    this.footer.setAttribute("class", success ? "success" : "failiure"),
+      console.log(`%c${message}`, `color: ${success ? "green" : "red"}`);
   }
 }
 

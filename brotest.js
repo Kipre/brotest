@@ -111,36 +111,38 @@ export class Bro {
     try {
       await fn();
     } catch (e) {
-      return [true, `${name} failed`, e];
+      return [true, "", e];
     }
     return [false, "", null];
   }
 
-  async run() {
-    const runOne = async ({ name, fn, timeout, display }) => {
-      const [fail, message, error] = await this.causesError(name, fn);
-      errors += fail;
-      display(!fail, message, error);
-    };
-    let errors = 0;
-    for (const file in this.files) {
-      for (const { name, fn, timeout, display, tests } of this.files[file]
-        .blocks) {
-        if (tests) {
-          for (const test of tests) {
-            await runOne(test);
+  run() {
+    setTimeout(async () => {
+      const runOne = async ({ name, fn, timeout, display }) => {
+        const [fail, message, error] = await this.causesError(name, fn);
+        errors += fail;
+        display(!fail, message, error);
+      };
+      let errors = 0;
+      for (const file in this.files) {
+        for (const { name, fn, timeout, display, tests } of this.files[file]
+          .blocks) {
+          if (tests) {
+            for (const test of tests) {
+              await runOne(test);
+            }
+          } else {
+            await runOne({
+              name,
+              fn,
+              timeout,
+              display,
+            });
           }
-        } else {
-          await runOne({
-            name,
-            fn,
-            timeout,
-            display,
-          });
         }
       }
-    }
-    ui.finished(errors == 0, this.nbTests, errors);
+      ui.finished(errors == 0, this.nbTests, errors);
+    }, 100);
   }
 
   currentTests(filename, block) {

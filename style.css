@@ -21,7 +21,7 @@ html, body {
 }
 
 .file > h2 {
-    margin: 10px;
+    margin: 0 0 10px 0;
 }
 
 .failiure {
@@ -35,9 +35,30 @@ html, body {
 .message {
     pre-wrap;
     background: bisque;
-    color: red;
     margin-left: 20px;
     padding: 5px;
+}
+
+details {
+  margin-top: 1rem;
+}
+
+pre {
+  marign-top: 0;
+  padding-top: 0;
+  overflow-x: scroll;
+}
+
+.danger {
+    color: red;
+}
+
+.added {
+ color: green;
+}
+
+.removed {
+ color: red;
 }
 
 .test {

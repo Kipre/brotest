@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Tests</title>
+    <link href="style.css" rel="stylesheet" type="text/css" />
+  </head>
+  <body>
+    <div class="container" id="container">
+      <h1>brotest</h1>
+      <button id="reload">reload/run</button>
+      <div class="file" id="file">
+        <h2>test/testToIfc.js</h2>
+        <div class="block" id="block">
+          <h3>test/testToIfc.js</h3>
+          <div class="test" id="test">
+            ✅ test serializes nested arrays
+            <div class="message" id="message">
+              <div class="danger">translates back to ifc failed</div>
+              <details class="diff" id="diff">
+                <summary>Text difference</summary>
+                <pre><code>
+                   <div id="line">some text</div>
+                   <div class="removed" id="line">some text</div>
+                   <div class="added" id="line">some text</div>
+                </code></pre>
+              </details>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="failiure" id="footer">1 out of 99 tests failed.</div>
+    </div>
+  </body>
+</html>

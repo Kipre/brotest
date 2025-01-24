@@ -31,10 +31,6 @@ pub fn diff(allocator: std.mem.Allocator, lhs_string: []const u8, rhs_string: []
     defer rhs.deinit();
 
     var lhs_iterator = std.mem.splitScalar(u8, lhs_string, '\n');
-
-    // bug somewhere
-    lhs_iterator.reset();
-
     while (lhs_iterator.next()) |line| {
         try lhs.append(line);
     }
