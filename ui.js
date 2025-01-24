@@ -1,11 +1,58 @@
+export class TestFailureError extends Error {
+  constructor(message, expected, found) {
+    super(message);
+    this.expected = expected;
+    this.found = found;
+    this.originalMessage = message;
+  }
+}
+
+const parser = new DOMParser();
+
+function resolve(file) {
+  return window.location.pathname.includes("brotest")
+    ? file
+    : "brotest/" + file;
+}
+
+const elements = parser.parseFromString(
+  await fetch(resolve("elements.html")).then((r) => r.text()),
+  "text/html",
+);
+
 function attachCSS() {
   const link = document.createElement("link");
   link.type = "text/css";
   link.rel = "stylesheet";
-  link.href = window.location.pathname.includes("brotest")
-    ? "style.css"
-    : "brotest/style.css";
+  link.href = resolve("style.css");
   document.head.appendChild(link);
+}
+
+function ensureString(value) {
+  if (typeof value == "string") return value;
+  return JSON.stringify(value, null, 2);
+}
+
+const wasm = await WebAssembly.instantiateStreaming(
+  fetch(resolve("diff/main.wasm")),
+);
+
+export function diffStrings(a, b) {
+  const { wasmDiff, memory } = wasm.instance.exports;
+
+  const memoryView = new Uint8Array(memory.buffer).subarray(1);
+  const { written } = new TextEncoder().encodeInto(a, memoryView);
+
+  const secondView = memoryView.subarray(written);
+  const { written: written2 } = new TextEncoder().encodeInto(b, secondView);
+
+  const end = written + written2 + 2;
+
+  const outputLength = wasmDiff(0, written + 1, end, memoryView.byteLength);
+  if (outputLength < 0) throw new Error("diff failed");
+
+  const outputView = new Uint8Array(memory.buffer, 0, outputLength);
+  return new TextDecoder().decode(outputView);
 }
 
 const elem = (type, firstClass, content) => {
@@ -35,26 +82,37 @@ class UI {
         test.innerText = `✅ ${name}`;
       } else {
         test.innerText = `❌ ${name}`;
-        if (error.stack.includes("⚠")) {
-          console.dir(error);
-          /* if the error comes from an umatched expectation */
-          const [mess, _, position] = error.stack.split("⚠");
-          message = message + mess.replace("Error:", "");
-          if (message.includes("Found:"))
-            test.appendChild(
+        console.error(error);
+
+        // error is from code
+        if (!(error instanceof TestFailureError))
+          return test.appendChild(elem("div", "message", error.toString()));
+
+        /* if the error comes from an umatched expectation */
+        message = message + error.originaMessage;
+
+        const messageBody = elem("div", "message", message);
+        test.appendChild(messageBody);
+        messageBody.appendChild(
+          elem(
+            "div",
+            "message",
+            elem(
+              "pre",
+              null,
               elem(
-                "div",
-                "message",
-                elem("pre", null, elem("code", null, message)),
+                "code",
+                null,
+                diffStrings(
+                  ensureString(error.expected),
+                  ensureString(error.found),
+                ),
               ),
-            );
-          else test.appendChild(elem("div", "message", message));
-          console.error(message);
-        } else {
-          /* if the error is from code */
-          test.appendChild(elem("div", "message", error.toString()));
-          console.error(error);
-        }
+            ),
+          ),
+        );
+
+        console.error(message);
       }
     };
   }

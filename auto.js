@@ -3,6 +3,7 @@
 */
 import bro from './brotest.js';
 import {primitiveEqual, deepEqual, matches, Bro, Expectation} from './brotest.js';
+import { diffStrings } from './ui.js';
 
 bro.describe('equalities', _=>{
 
@@ -158,5 +159,9 @@ bro.describe('expectations', _=>{
         bro.expect(() => new Expectation({a: 2, b: 3}).toMatchObject({C: 1})).toThrow();
     })
 })
+
+bro.test('diffing', _=>{
+    bro.expect(diffStrings("a\nb", "a\nc")).toBe("  a\n- b\n+ c\n");
+});
 
 bro.run();

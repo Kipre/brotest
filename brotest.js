@@ -1,4 +1,12 @@
-import ui from "./ui.js";
+import ui, { TestFailureError } from "./ui.js";
+
+const inlineLimit = 20;
+
+function truncate(item) {
+  const value = item.toString();
+  if (value.length > inlineLimit) return value.slice(0, inlineLimit) + "...";
+  return value;
+}
 
 function currentFile() {
   const matches = new Error().stack.match(/(?<=https?:\/\/[^\/]*\/)[^:]*/gi);
@@ -186,60 +194,71 @@ export class Expectation {
 
   toBe(expectedValue) {
     if (this.value !== expectedValue) {
-      throw new Error(`because ${this.value} is not ${expectedValue}⚠`);
+      throw new TestFailureError(
+        `because ${this.value} is not ${expectedValue}`,
+        expectedValue,
+        this.value,
+      );
     }
   }
 
   toMatchObject(object) {
     if (!matches(object, this.value)) {
-      throw new Error(
+      throw new TestFailureError(
         `because ${JSON.stringify(this.value)} does not match ${JSON.stringify(
           object,
-        )}.⚠`,
+        )}.`,
+        object,
+        this.value,
       );
     }
   }
 
   toEqual(expectation) {
     if (!deepEqual(this.value, expectation)) {
-      throw new Error(
-        `because value does not match expectation:\nExpected: ${JSON.stringify(
+      throw new TestFailureError(
+        `because value does not match expectation:\nExpected: ${truncate(
           expectation,
-          null,
-          2,
-        )}\nFound: ${JSON.stringify(this.value, null, 2)}.⚠`,
+        )}\nFound: ${truncate(this.value)}.`,
+        expectation,
+        this.value,
       );
     }
   }
 
   toHaveLength(number) {
     if (this.value.length !== number) {
-      throw new Error(
+      throw new TestFailureError(
         `because ${JSON.stringify(
           this.value,
-        )} does not have a length of ${number}.⚠`,
+        )} does not have a length of ${number}.`,
+        number,
+        this.value.length,
       );
     }
   }
 
   toBeLessThan(number) {
     if (this.value >= number) {
-      throw new Error(
-        `because ${this.value} is bigger than ${number}.⚠`,
+      throw new TestFailureError(
+        `because ${this.value} is bigger than ${number}.`,
+        number,
+        this.value,
       );
     }
   }
 
-  toThrow(error) {
+  toThrow(errorType = Error) {
     let errorCaught = false;
     try {
       this.value();
     } catch (error) {
+      if (!(error instanceof errorType)) throw error;
       errorCaught = true;
     } finally {
       if (!errorCaught)
-        throw new Error(
-          `because ${this.value} was supposed to throw an error but didn't.⚠`,
+        throw new TestFailureError(
+          `because ${this.value} was supposed to throw an ${errorType} but didn't.`,
         );
     }
   }
