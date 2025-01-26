@@ -17,7 +17,7 @@ function emptyObj(obj) {
   return obj && Object.keys(obj).length === 0 && obj.constructor === Object;
 }
 
-export function primitiveEqual(x, y) {
+export function primitiveEqual(x, y, precision) {
   "use strict";
   // https://stackoverflow.com/questions/201183/how-to-determine-equality-for-two-javascript-objects
   if (x === null || x === undefined || y === null || y === undefined) {
@@ -35,7 +35,11 @@ export function primitiveEqual(x, y) {
   if (x instanceof RegExp) {
     return x === y;
   }
-  if (x === y || x.valueOf() === y.valueOf()) {
+  if (
+    x === y ||
+    x.valueOf() === y.valueOf() ||
+    (precision && Math.abs(x - y) < precision)
+  ) {
     return true;
   }
   if (Array.isArray(x) && x.length !== y.length) {
@@ -57,8 +61,8 @@ export function primitiveEqual(x, y) {
   return undefined;
 }
 
-export function deepEqual(x, y) {
-  const primitive = primitiveEqual(x, y);
+export function deepEqual(x, y, precision) {
+  const primitive = primitiveEqual(x, y, precision);
   if (primitive !== undefined) {
     return primitive;
   }
@@ -67,7 +71,7 @@ export function deepEqual(x, y) {
   const p = Object.keys(x);
   return (
     Object.keys(y).every((i) => p.indexOf(i) !== -1) &&
-    p.every((i) => deepEqual(x[i], y[i]))
+    p.every((i) => deepEqual(x[i], y[i], precision))
   );
 }
 
@@ -220,6 +224,18 @@ export class Expectation {
     if (!deepEqual(this.value, expectation)) {
       throw new TestFailureError(
         `because value does not match expectation:\nExpected: ${truncate(
+          expectation,
+        )}\nFound: ${truncate(this.value)}.`,
+        expectation,
+        this.value,
+      );
+    }
+  }
+
+  toRoughlyEqual(expectation, precision = 1e-3) {
+    if (!deepEqual(this.value, expectation, precision)) {
+      throw new TestFailureError(
+        `because value is not even close to expectation:\nExpected: ${truncate(
           expectation,
         )}\nFound: ${truncate(this.value)}.`,
         expectation,
