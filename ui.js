@@ -7,6 +7,9 @@ export class TestFailureError extends Error {
   }
 }
 
+const yes = `✅`;
+const nope = `❌`;
+
 const parser = new DOMParser();
 
 function resolve(file) {
@@ -112,11 +115,11 @@ class UI {
 
     return (passed, msg, error) => {
       if (passed) {
-        test.innerText = `✅ ${name}`;
+        test.innerText = `${yes} ${name}`;
         return;
       }
 
-      test.innerText = `❌ ${name}`;
+      test.innerText = `${nope} ${name}`;
       console.error(error);
 
       const message = this.message.cloneNode(true);
@@ -158,6 +161,7 @@ class UI {
       ? `All ${total} test ran successfully.`
       : `${failed} out of ${total} tests failed.`;
 
+    document.querySelector("h1").innerText = `brotest ${success ? yes : nope}`;
     this.footer.innerText = message;
     this.footer.setAttribute("class", success ? "success" : "failiure"),
       console.log(`%c${message}`, `color: ${success ? "green" : "red"}`);
