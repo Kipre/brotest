@@ -1,6 +1,7 @@
 import ui, { TestFailureError } from "./ui.js";
 
 const inlineLimit = 20;
+const defaultPrecision = 1e-4;
 
 function truncate(item) {
   const value = item.toString();
@@ -11,10 +12,6 @@ function truncate(item) {
 function currentFile() {
   const matches = new Error().stack.match(/(?<=https?:\/\/[^\/]*\/)[^:]*/gi);
   return matches[matches.length - 1];
-}
-
-function emptyObj(obj) {
-  return obj && Object.keys(obj).length === 0 && obj.constructor === Object;
 }
 
 export function primitiveEqual(x, y, precision) {
@@ -76,11 +73,11 @@ export function deepEqual(x, y, precision) {
 }
 
 /* sub is a subset of obj */
-export function matches(sub, obj) {
+export function matches(sub, obj, precision) {
   // if sub is primitive compare it to obj
-  if (sub !== Object(sub)) return sub === obj;
+  if (sub !== Object(sub)) return primitiveEqual(sub, obj, precision);
   // else iterate over its keys
-  return Object.keys(sub).every((i) => matches(sub[i], obj[i]));
+  return Object.keys(sub).every((i) => matches(sub[i], obj[i], precision));
 }
 
 export class Bro {
@@ -88,6 +85,7 @@ export class Bro {
     this.files = {};
     this.nbTests = 0;
     this.currentBlock = null;
+    this.runOnly = null;
   }
 
   test(name, fn, timeout) {
@@ -99,6 +97,11 @@ export class Bro {
       timeout,
       display: ui.addTest(file, block, name),
     });
+  }
+
+  only(...args) {
+    this.runOnly = this.nbTests;
+    this.test(...args);
   }
 
   describe(name, fn) {
@@ -122,12 +125,20 @@ export class Bro {
 
   run() {
     setTimeout(async () => {
+      let errors = 0,
+        index = 0,
+        skipped = 0;
+
       const runOne = async ({ name, fn, timeout, display }) => {
+        if (this.runOnly != null && index++ !== this.runOnly) {
+          skipped++;
+          return;
+        }
         const [fail, message, error] = await this.causesError(name, fn);
         errors += fail;
         display(!fail, message, error);
       };
-      let errors = 0;
+
       for (const file in this.files) {
         for (const { name, fn, timeout, display, tests } of this.files[file]
           .blocks) {
@@ -145,7 +156,7 @@ export class Bro {
           }
         }
       }
-      ui.finished(errors == 0, this.nbTests, errors);
+      ui.finished(errors == 0, this.nbTests, errors, skipped);
     }, 100);
   }
 
@@ -220,6 +231,18 @@ export class Expectation {
     }
   }
 
+  toRoughlyMatch(object, precision = defaultPrecision) {
+    if (!matches(object, this.value, precision)) {
+      throw new TestFailureError(
+        `because ${JSON.stringify(this.value)} does not match ${JSON.stringify(
+          object,
+        )} even closely.`,
+        object,
+        this.value,
+      );
+    }
+  }
+
   toEqual(expectation) {
     if (!deepEqual(this.value, expectation)) {
       throw new TestFailureError(
@@ -232,7 +255,7 @@ export class Expectation {
     }
   }
 
-  toRoughlyEqual(expectation, precision = 1e-3) {
+  toRoughlyEqual(expectation, precision = defaultPrecision) {
     if (!deepEqual(this.value, expectation, precision)) {
       throw new TestFailureError(
         `because value is not even close to expectation:\nExpected: ${truncate(

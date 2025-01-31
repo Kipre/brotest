@@ -156,10 +156,13 @@ class UI {
     };
   }
 
-  finished(success, total, failed) {
-    const message = success
+  finished(success, total, failed, skipped) {
+    let message = success
       ? `All ${total} test ran successfully.`
       : `${failed} out of ${total} tests failed.`;
+
+    if (skipped)
+      message += ` (${skipped} skipped)`;
 
     document.querySelector("h1").innerText = `brotest ${success ? yes : nope}`;
     this.footer.innerText = message;
