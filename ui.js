@@ -143,6 +143,7 @@ class UI {
 
       message.appendChild(diffSection);
       const code = diffSection.querySelector("code");
+      console.error(error.found);
       diffStrings(ensureString(error.expected), ensureString(error.found))
         .split("\n")
         .forEach((line) => {
