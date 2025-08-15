@@ -67,17 +67,14 @@ function displayTwoPaths(expected, found) {
   let yMax = Number.NEGATIVE_INFINITY;
 
   const paths = [];
-  for (const [d, color] of [
-    [expected, "yellow"],
-    [found, "red"],
+  for (const [d, className] of [
+    [expected, "expected"],
+    [found, "found"],
   ]) {
     const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
     path.setAttribute("d", d);
-    path.setAttribute("stroke", color);
-    path.setAttribute("style", "opacity: 0.8");
+    path.setAttribute("class", className);
     path.setAttribute("fill", "none");
-    path.setAttribute("marker-mid", "url(#arrow)");
-    path.setAttribute("marker-end", "url(#arrow)");
 
     const totalLength = path.getTotalLength();
     for (let i = 0; i < 1; i += 0.01) {
@@ -92,7 +89,6 @@ function displayTwoPaths(expected, found) {
   }
 
   const size = Math.max(xMax - xMin, yMax - yMin);
-  paths[1].setAttribute("transform", `translate(${size / 80}, ${size / 80})`);
 
   const mgn = size * 0.1;
   svg.setAttribute(
@@ -101,27 +97,11 @@ function displayTwoPaths(expected, found) {
   );
 
   svg.innerHTML = `
-  <defs>
-      <marker
-        id="arrow"
-        viewBox="0 0 10 10"
-        refX="1"
-        refY="5"
-        markerUnits="strokeWidth"
-        markerWidth="5"
-        markerHeight="10"
-        orient="auto">
-        <path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke" />
-      </marker>
-  </defs>
   <line class="axes" x1="${xMin - mgn / 2}" x2=${xMax + mgn / 2} stroke="black" marker-end="url(#arrow)"/>
   <line class="axes" y1="${yMin - mgn / 2}" y2=${yMax + mgn / 2} stroke="black" marker-end="url(#arrow)"/>
    ${svg.innerHTML}`;
 
-  svg.setAttribute(
-    "style",
-    `font-size: ${size / 100}; stroke-width: 0.2em; transform: scale(1, -1); max-height: 100vh;`,
-  );
+  svg.setAttribute("style", `--total-size: ${size};`);
 
   return svg;
 }
@@ -238,6 +218,9 @@ class UI {
 
       const visualDiff = this.visualDiff.cloneNode(true);
       visualDiff.removeAttribute("id");
+      visualDiff.querySelector("button.toggle-offset").onclick = (e) => {
+        e.target.parentElement.classList.toggle("offset-path");
+      };
       message.appendChild(visualDiff);
       visualDiff.appendChild(displayTwoPaths(error.expected, error.found));
     };

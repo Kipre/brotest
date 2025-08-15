@@ -65,6 +65,36 @@ pre {
     margin: 5px;
 }
 
+button.toggle-offset {
+   float: right;
+}
+
+.visual-diff svg {
+  --total-size: 100;
+  font-size: calc(var(--total-size) / 100);
+  stroke-width: 0.2em;
+  transform: scale(1, -1);
+  max-height: 100vh;
+}
+
+svg path {
+  marker-mid: url(#arrow);
+  marker-end: url(#arrow);
+  opacity: 0.8;
+}
+
+.offset-path path:nth-of-type(2) {
+  transform: translate(calc(calc(var(--total-size) / 80) * 1px), calc(calc(var(--total-size) / 80) * 1px));
+}
+
+svg .expected {
+  stroke: yellow;
+}
+
+svg .found {
+  stroke: red;
+}
+
 @media (prefers-color-scheme: dark) {
     html {
         background: #242424;
