@@ -9,7 +9,7 @@ import {
   Bro,
   Expectation,
 } from "./brotest.js";
-import { diffStrings } from "./ui.js";
+import { diffStrings, isValidSVGPath } from "./ui.js";
 
 bro.describe("equalities", (_) => {
   bro.test("primitive equal", (_) => {
@@ -83,7 +83,7 @@ bro.describe("equalities", (_) => {
       )
       .toBe(false);
 
-    Object.prototype.equals = function (obj) {
+    Object.prototype.equals = function(obj) {
       return deepEqual(this, obj);
     };
 
@@ -163,10 +163,10 @@ bro.describe("equalities", (_) => {
 
     // no two different function are equal really, they capture their context constiables
     // so even if they have same toString(), they won't have same functionality
-    const func = function (x) {
+    const func = function(x) {
       return true;
     };
-    const func2 = function (x) {
+    const func2 = function(x) {
       return true;
     };
     bro.expect(deepEqual(func, func)).toBe(true);
@@ -232,6 +232,22 @@ bro.describe("expectations", (_) => {
 
 bro.test("diffing", (_) => {
   bro.expect(diffStrings("a\nb", "a\nc")).toBe("  a\n- b\n+ c\n");
+});
+
+bro.test("test svg string", (_) => {
+  bro.expect(isValidSVGPath("")).toBe(false);
+  bro.expect(isValidSVGPath("M")).toBe(false);
+  bro.expect(isValidSVGPath("M1 1")).toBe(true);
+  bro.expect(isValidSVGPath("M 1 1")).toBe(true);
+  bro.expect(isValidSVGPath("M 1.234 1")).toBe(true);
+  bro.expect(isValidSVGPath("R 1.234 1")).toBe(false);
+  bro
+    .expect(
+      isValidSVGPath(
+        "M 2200.193773580484 986.7767478235116 L 2809.0353766099665 1279.9794107165994 L 2725.5405109099383 1784.719817295343 L 2144.697960371747 1056.366296493606 A 200 200 0 0 0 2200.193773580484 986.7767478235116 Z",
+      ),
+    )
+    .toBe(true);
 });
 
 bro.run();
