@@ -10,6 +10,7 @@ export class TestFailureError extends Error {
 const svgPathRegexDetailed = /^[Mm]\s*[0-9.\-]+/;
 
 export function isValidSVGPath(pathString) {
+  if (pathString == null || pathString.trim == null) return false;
   const normalized = pathString.trim().replace(/\s+/g, " ");
   if (normalized && !normalized.match(/^[Mm]/)) return false;
   return svgPathRegexDetailed.test(pathString);
@@ -101,7 +102,7 @@ function displayTwoPaths(expected, found) {
   <line class="axes" y1="${yMin - mgn / 2}" y2=${yMax + mgn / 2} stroke="black" marker-end="url(#arrow)"/>
    ${svg.innerHTML}`;
 
-  svg.setAttribute("style", `--total-size: ${size};`);
+  svg.setAttribute("style", `--total-size: ${size}; font-size: ${size / 80}`);
 
   return svg;
 }
