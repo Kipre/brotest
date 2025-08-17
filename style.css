@@ -81,6 +81,9 @@ svg path {
   marker-mid: url(#arrow);
   marker-end: url(#arrow);
   opacity: 0.8;
+
+  transition-property: transform;
+  transition-duration: 0.2s;
 }
 
 .offset-path path:nth-of-type(2) {

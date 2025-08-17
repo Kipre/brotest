@@ -38,7 +38,7 @@ function ensureString(value) {
 }
 
 const wasm = await WebAssembly.instantiateStreaming(
-  fetch(resolve("diff/main.wasm")),
+  fetch(resolve("diff/zig-out/bin/main.wasm")),
 );
 
 export function diffStrings(a, b) {
