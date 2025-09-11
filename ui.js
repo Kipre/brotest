@@ -22,9 +22,10 @@ const nope = `❌`;
 const parser = new DOMParser();
 
 function resolve(file) {
-  return window.location.pathname.includes("brotest")
-    ? file
-    : "brotest/" + file;
+  const err = new Error();
+  const lastLine = err.stack.toString().split("\n").at(-1);
+  const address = lastLine.slice(7).split("ui.js")[0];
+  return address + file;
 }
 
 const elements = parser.parseFromString(
