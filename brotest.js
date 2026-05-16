@@ -114,6 +114,7 @@ export class Bro {
     return new Expectation(value);
   }
 
+  // TODO: doesn't work
   async causesError(name, fn) {
     try {
       await fn();

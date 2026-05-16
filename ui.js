@@ -108,6 +108,16 @@ function displayTwoPaths(expected, found) {
   return svg;
 }
 
+function displayTwoSVGs(container, expected, found) {
+  container.innerHTML += expected + found;
+  const [_button, expectedSvg, foundSvg] = container.children;
+  expectedSvg.style = null;
+  foundSvg.style = null;
+  expectedSvg.classList.add("expected")
+  foundSvg.classList.add("found");
+  return container;
+}
+
 class UI {
   constructor() {
     elements.head
@@ -215,15 +225,25 @@ class UI {
         code.appendChild(div);
       }
 
-      // display visual error if possible
-      if (error.expected === "" || !isValidSVGPath(error.expected)) return;
+      if (error.expected === ""
+        || (!isValidSVGPath(error.expected)
+          && !error.expected.startsWith("<svg"))) return;
 
       const visualDiff = this.visualDiff.cloneNode(true);
       visualDiff.removeAttribute("id");
       visualDiff.querySelector("button.toggle-offset").onclick = (e) => {
-        e.target.parentElement.classList.toggle("offset-path");
+        visualDiff.classList.toggle("offset-path");
       };
       message.appendChild(visualDiff);
+
+      // display svg visual error if possible
+      if (error.expected.startsWith("<svg")) {
+        const container = visualDiff.querySelector(".visual-diff-container");
+        displayTwoSVGs(container, error.expected, error.found);
+        return;
+      }
+
+      // display path visual error if possible
       visualDiff.appendChild(displayTwoPaths(error.expected, error.found));
     };
   }
