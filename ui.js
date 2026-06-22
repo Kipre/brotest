@@ -34,7 +34,7 @@ const elements = parser.parseFromString(
 );
 
 function ensureString(value) {
-  if (typeof value == "string") return value;
+  if (typeof value === "string") return value;
   return JSON.stringify(value, null, 2);
 }
 
@@ -227,7 +227,7 @@ class UI {
 
       if (error.expected === ""
         || (!isValidSVGPath(error.expected)
-          && !error.expected.startsWith("<svg"))) return;
+          && !error.expected.startsWith?.("<svg"))) return;
 
       const visualDiff = this.visualDiff.cloneNode(true);
       visualDiff.removeAttribute("id");
