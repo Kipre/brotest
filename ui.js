@@ -113,7 +113,7 @@ function displayTwoSVGs(container, expected, found) {
   const [_button, expectedSvg, foundSvg] = container.children;
   expectedSvg.style = null;
   foundSvg.style = null;
-  expectedSvg.classList.add("expected")
+  expectedSvg.classList.add("expected");
   foundSvg.classList.add("found");
   return container;
 }
@@ -225,9 +225,12 @@ class UI {
         code.appendChild(div);
       }
 
-      if (error.expected === ""
-        || (!isValidSVGPath(error.expected)
-          && !error.expected.startsWith?.("<svg"))) return;
+      if (
+        error.expected === "" ||
+        (!isValidSVGPath(error.expected) &&
+          !error.expected.startsWith?.("<svg"))
+      )
+        return;
 
       const visualDiff = this.visualDiff.cloneNode(true);
       visualDiff.removeAttribute("id");
@@ -249,9 +252,14 @@ class UI {
   }
 
   finished(success, total, failed, skipped) {
-    let message = success
-      ? `All ${total} test ran successfully.`
-      : `${failed} out of ${total} tests failed.`;
+    const succeded = total - skipped;
+    let message;
+    if (success) {
+      if (skipped)
+        message = `${succeded} test${succeded > 1 ? "s" : ""} ran successfully.`;
+      else message = `All ${succeded} test ran successfully.`;
+    } else if (failed)
+      message = `${failed} out of ${total - skipped} tests failed.`;
 
     if (skipped) message += ` (${skipped} skipped)`;
 
