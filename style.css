@@ -1,9 +1,12 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500&display=swap');
 
-html, body {
+html {
+    font-family: 'Roboto Mono';
+}
+
+body {
     max-width: 700px;
     margin: auto;
-    font-family: 'Roboto Mono';
 }
 
 .container > * {
